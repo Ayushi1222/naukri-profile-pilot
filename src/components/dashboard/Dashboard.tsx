@@ -5,6 +5,7 @@ import { StatusPanel } from "./StatusPanel";
 import { SchedulerPanel } from "./SchedulerPanel";
 import { UpdateHistoryPanel } from "./UpdateHistoryPanel";
 import { ManualUpdatePanel } from "./ManualUpdatePanel";
+import { PaymentPage } from "../payment/PaymentPage";
 import { useToast } from "@/hooks/use-toast";
 
 interface DashboardProps {
@@ -18,6 +19,7 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
   const [updateHistory, setUpdateHistory] = useState([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [scheduleFrequency, setScheduleFrequency] = useState(user.profileSettings?.scheduleFrequency || 'weekly');
+  const [showPaymentPage, setShowPaymentPage] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -75,6 +77,13 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
 
   const toggleAutoUpdate = () => {
     const newStatus = !autoUpdateEnabled;
+    
+    // If enabling auto-update, check if user has paid
+    if (newStatus && !user.profileSettings?.isPaid) {
+      setShowPaymentPage(true);
+      return;
+    }
+    
     setAutoUpdateEnabled(newStatus);
     
     // Update user settings
@@ -94,6 +103,10 @@ export const Dashboard = ({ user, onLogout }: DashboardProps) => {
         : "Automatic updates have been turned off.",
     });
   };
+
+  if (showPaymentPage) {
+    return <PaymentPage onBack={() => setShowPaymentPage(false)} user={user} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
